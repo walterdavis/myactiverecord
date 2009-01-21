@@ -2,90 +2,67 @@ MyActiveRecord was created by Jake Grimley at MadeMedia Ltd. I have forked the p
 
 You may read more about MAR here: <http://www.phpclasses.org/browse/package/2990.html>
 
-##MyActiveRecord
+h2. MyActiveRecord
 
-A simple, speedy Object/Relational Mapper for MySQL based on Martin 
-Fowler's ActiveRecord pattern and heavily influenced by the implementation 
-of the same name in Ruby on Rails.
+A simple, speedy Object/Relational Mapper for MySQL based on Martin Fowler's ActiveRecord pattern and heavily influenced by the implementation of the same name in Ruby on Rails.
 
-###Features
+h3. Features
 
 * Mapping of table to class and row to object
 * Relationship retrieval
 * Data validation and error handling
 * PHP5 and PHP4 compatibility
 
-###License
+h3. License
 
-**Copyright (c) 2006, Jake Grimley  <jake.grimley@mademedia.co.uk>
-All rights reserved.**
+**Copyright (c) 2006, Jake Grimley <jake.grimley@mademedia.co.uk> All rights reserved.**
 
-Redistribution and use in source and binary forms, with or without 
-modification, are permitted provided that the following conditions are met:
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
-* Redistributions of source code must retain the above copyright notice, 
-this list of conditions and the following disclaimer.
+* Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
 
-* Redistributions in binary form must reproduce the above copyright 
-notice, this list of conditions and the following disclaimer in the 
-documentation and/or other materials provided with the distribution.
+* Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
 
-* Neither the name of Made Media Ltd. nor the names of its contributors 
-may be used to endorse or promote products derived from this 
-software without specific prior written permission.
+* Neither the name of Made Media Ltd. nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
 
-**THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS 
-IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
-THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR 
-PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR 
-CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, 
-EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, 
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR 
-PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
-LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING 
-NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.**
+**THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.**
 
-###Limitations
+h3. Limitations
 
 This class acheives simplicty of use and implementation through the following 'by-design' limitations:
 
-1. This class talks to MySQL only.
+# This class talks to MySQL only.
 
-2. Table/Class mapping is achieved by each database table being named IDENTICALLY to the MyActiveRecord subclass that will represent it (but in lowercase for compatibility reasons).
+# Table/Class mapping is achieved by each database table being named IDENTICALLY to the MyActiveRecord subclass that will represent it (but in lowercase for compatibility reasons).
 
-3. Every database table mapped by MyActiveRecord MUST have an auto-incrementing primary-key named `id`.
+# Every database table mapped by MyActiveRecord MUST have an auto-incrementing primary-key named @id@.
 
-###Changelog 0.4 - 0.5
+h3. Changelog 0.4 - 0.5
 
-1. BUG FIXES
+# BUG FIXES
 
-    1. ::TimeStamp: fix syntax error.
-    2. ::Update: fix syntax error.
-    3. find_linked: fix SQL error.
-    4. validate_uniqueness_of: fix edge case when object has not been saved, typo.
+## ::TimeStamp: fix syntax error.
+## ::Update: fix syntax error.
+## find_linked: fix SQL error.
+## validate_uniqueness_of: fix edge case when object has not been saved, typo.
 
-2. ADDITIONS
-    1. Added DEFAULT_LIMIT global variable to set max number of rows returned.
-    2. Added validate_email and validate_unique_email functions.
-    3. Added validate_existence function.
-    4. Added count_children and count_linked functions.
-    5. Added find_siblings function.
-    6. Added ::DistinctValues and distinct_values functions.
+# ADDITIONS
+## Added DEFAULT_LIMIT global variable to set max number of rows returned.
+## Added validate_email and validate_unique_email functions.
+## Added validate_existence function.
+## Added count_children and count_linked functions.
+## Added find_siblings function.
+## Added ::DistinctValues and distinct_values functions.
 
-###Changelog 0.3 - 0.4
+h3. Changelog 0.3 - 0.4
 
-1. BUG FIXES
-    1. Error is triggered when connection fails or database cannot be selected
-    2. If Class cannot be found or table cannot be found to match class scriptreports error instead of hanging. (this fixes bug introduced in 0.3)
-    3. Removal of error notices on save dues to presumption about existance of variables
+# BUG FIXES
+## Error is triggered when connection fails or database cannot be selected
+## If Class cannot be found or table cannot be found to match class scriptreports error instead of hanging. (this fixes bug introduced in 0.3)
+## Removal of error notices on save dues to presumption about existance of variables
 
-2. FIND_CHILDREN() IMPROVEMENTS  
-Added new paramaters to the find_children() method. First the full 
-complement of Where, OrderBy, Limit and Offset a-la FindAll(). Second, the 
-addition of a ForeignKey parameter. Useful if you have a table with a
-two foreign keys pointing to the same table, and so you need to use a 
-different name to parent_table_id
+# FIND_CHILDREN() IMPROVEMENTS  
+Added new paramaters to the find_children() method. First the full complement of Where, OrderBy, Limit and Offset a-la FindAll(). Second, the addition of a ForeignKey parameter. Useful if you have a table with a two foreign keys pointing to the same table, and so you need to use a different name to parent_table_id
 
-3. ADDED FREQDIST() WHERE and LIMIT parameters  
-e.g. `print_r( MyActiveRecord::FreqDist( 'Order', 'total_lines', "date BETWEEN '2005-01-01' AND '2006-01-01'" ) )`
+# ADDED FREQDIST() WHERE and LIMIT parameters  
+e.g. @print_r( MyActiveRecord::FreqDist( 'Order', 'total_lines', "date BETWEEN '2005-01-01' AND '2006-01-01'" ) )@
