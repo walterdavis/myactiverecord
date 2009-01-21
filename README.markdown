@@ -56,11 +56,28 @@ This class acheives simplicty of use and implementation through the following 'b
 
 3. Every database table mapped by MyActiveRecord MUST have an auto-incrementing primary-key named `id`.
 
+###Changelog 0.4 - 0.5
+
+1. BUG FIXES
+
+    1. ::TimeStamp: fix syntax error.
+    2. ::Update: fix syntax error.
+    3. find_linked: fix SQL error.
+    4. validate_uniqueness_of: fix edge case when object has not been saved, typo.
+
+2. ADDITIONS
+    1. Added DEFAULT_LIMIT global variable to set max number of rows returned.
+    2. Added validate_email and validate_unique_email functions.
+    3. Added validate_existence function.
+    4. Added count_children and count_linked functions.
+    5. Added find_siblings function.
+    6. Added ::DistinctValues and distinct_values functions.
+
 ###Changelog 0.3 - 0.4
 
 1. BUG FIXES
-    1.  Error is triggered when connection fails or database cannot be selected
-    2.  If Class cannot be found or table cannot be found to match class scriptreports error instead of hanging. (this fixes bug introduced in 0.3)
+    1. Error is triggered when connection fails or database cannot be selected
+    2. If Class cannot be found or table cannot be found to match class scriptreports error instead of hanging. (this fixes bug introduced in 0.3)
     3. Removal of error notices on save dues to presumption about existance of variables
 
 2. FIND_CHILDREN() IMPROVEMENTS  
