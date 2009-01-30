@@ -494,7 +494,7 @@ class MyActiveRecord
 		$table1=MyActiveRecord::Class2Table($obj1);
 		$table2=MyActiveRecord::Class2Table($obj2);
 		$linktable = MyActiveRecord::GetLinkTable($table1, $table2);
-		$sql = "INSERT INTO {$linktable} ({$table1}_id, {$table2}_id) VALUES ({$obj1->id}, {$obj2->id})";
+		$sql = "REPLACE INTO {$linktable} ({$table1}_id, {$table2}_id) VALUES ({$obj1->id}, {$obj2->id})";
 		if( MyActiveRecord::Query($sql) )
 		{
 			return true;
