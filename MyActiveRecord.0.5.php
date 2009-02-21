@@ -797,6 +797,7 @@ class MyActiveRecord
 	*/	
 	function Update( $strClass, $id, $properties )
 	{
+		$id = intval($id);
 		$object = MyActiveRecord::FindById($strClass, $id);
 		$object->populate($properties);
 		return $object->save();
@@ -874,7 +875,7 @@ class MyActiveRecord
 				}
 			}
 			// insert or update as required
-			if( isset($this->id) )
+			if( isset($this->id) && $this->id > 0 )
 			{
 				$sql="UPDATE `$table` SET ".implode($set, ", ")." WHERE id={$this->id}";
 			}
@@ -883,7 +884,7 @@ class MyActiveRecord
 				$sql="INSERT INTO `$table` (".implode($keys, ", ").") VALUES (".implode($vals, ", ").")";
 			}
 			$success = MyActiveRecord::Query($sql);
-			if( !isset($this->id) )
+			if( !isset($this->id) || $this->id == 0 )
 			{
 				$this->id=mysql_insert_id( MyActiveRecord::Connection() );
 			}
@@ -927,13 +928,21 @@ class MyActiveRecord
 	 * $car = MyActiveRecord::FindById('Car', 1);
 	 * $car->destroy();
 	 * </code>
+	 * NOTE: This is a naive destroy -- even objects with errors
+	 * will be deleted. If you need to guard against this, subclass
+	 * MyActiveRecord and add your own version of destroy() as follows:
+	 * <code>
+	 * function destroy(){
+	 * 	if(!$this->get_errors()) return parent::destroy();
+	 * }
 	 *
 	 * @return	boolean	True on success, False on failure
 	 */
 	function destroy()
 	{
 		$table = MyActiveRecord::Class2Table($this);
-		return MyActiveRecord::Query( "DELETE FROM $table WHERE id ={$this->id}" );
+		$id = intval($this->id);
+		return MyActiveRecord::Query( "DELETE FROM $table WHERE id = $id" );
 	}
 	
 	/**
@@ -981,7 +990,7 @@ class MyActiveRecord
 	 */
 	function attach(&$obj)
 	{
-		if( $this->id && $obj->id )
+		if( isset($this->id) && $this->id > 0 && isset($obj->id) && $obj->id > 0 )
 		{
 			return MyActiveRecord::Link($this, $obj);
 		}
@@ -1099,7 +1108,7 @@ class MyActiveRecord
 	function find_parent($strClass, $strForeignKey=NULL)
 	{
 		$key = $strForeignKey or $key=strtolower( $strClass.'_id' );
-		return MyActiveRecord::FindById($strClass, $this->$key);
+		return MyActiveRecord::FindById($strClass, intval($this->$key));
 	}
 	
 	/**
@@ -1126,11 +1135,11 @@ class MyActiveRecord
 	{
 		// name of foreign key:
 		$key = $strForeignKey ? $strForeignKey : strtolower( get_class($this).'_id' );
-				
+		$this->id = intval($this->id);
 		if( is_array($mxdCondition) || is_null($mxdCondition) )
 		{
 			// specifiy condition as an array
-			$mxdCondition[$key]=$this->id;
+			$mxdCondition[$key] = $this->id;
 			return MyActiveRecord::FindAll( $strClass, $mxdCondition, $strOrderBy, $intLimit, $intOffset );
 		}
 		else
@@ -1158,7 +1167,7 @@ class MyActiveRecord
 	 */	
 	function find_linked($strClass, $mxdCondition=null, $strOrder=null)
 	{
-		if($this->id)
+		if(isset($this->id) && $this->id > 0)
 		{
 			// only attempt to find links if this object has an id
 			$table = MyActiveRecord::Class2Table($strClass);
@@ -1218,6 +1227,7 @@ class MyActiveRecord
  */
 	function count_children($strClass, $strCondition = '1=1')
 	{
+		$this->id = intval($this->id);
 		// name of foreign key:
 		$key = strtolower( get_class($this).'_id' );
 		$fullSQLCondition = "$key=$this->id AND ($strCondition)";
@@ -1233,8 +1243,9 @@ class MyActiveRecord
  */
 	function count_linked($strClass, $mxdCondition=null)
 	{
-		if($this->id)
+		if(isset($this->id) && $this->id > 0)
 		{
+			$this->id = intval($this->id);
 			// only attempt to find links if this object has an id
 			$table = MyActiveRecord::Class2Table($strClass);
 			$thistable = MyActiveRecord::Class2Table($this);
@@ -1268,7 +1279,7 @@ class MyActiveRecord
  * @return array Array of siblings, or empty array
  */
 	function find_siblings($strKey,$strWhere='1'){
-		return ActiveRecord::FindAll(get_class($this),$strWhere . ' AND id != ' . $this->id . ' AND ' . $strKey . ' != "" AND ' . $strKey . ' = "' . $this->$strKey . '"');
+		return ActiveRecord::FindAll(get_class($this),$strWhere . ' AND id != ' . intval($this->id) . ' AND ' . $strKey . ' != "" AND ' . $strKey . ' = "' . $this->$strKey . '"');
 	}
 
 	/**
@@ -1296,7 +1307,7 @@ class MyActiveRecord
 	 * Gets an error on a specified attribute.
 	 * 
 	 * @param	string	strKey	name of field/attribute/key
-	 * @return	string	Error Message. False if no error
+	 * @return	mixed	Error message or false if no error
 	 */
 	function get_error($strKey)
 	{
@@ -1313,12 +1324,12 @@ class MyActiveRecord
 	/**
 	 * Returns all errors.
 	 *
-	 * @return	array	Array of errors, keyed by attribute. 
+	 * @return	mixed	Array of errors, keyed by attribute. 
 	 *					False if there are no errors.
 	 */
 	function get_errors()
 	{
-		if( isset($this->_errors) && is_array($this->_errors) )
+		if( isset($this->_errors) && is_array($this->_errors) && count($this->_errors) > 0 )
 		{
 			return $this->_errors;
 		}
