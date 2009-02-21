@@ -16,6 +16,7 @@
  * License
  * 
  * Copyright (c) 2006, Jake Grimley	<jake.grimley@mademedia.co.uk>
+ * Copyright (c) 2009, Walter Lee Davis <waltd@wdstudio.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without 
