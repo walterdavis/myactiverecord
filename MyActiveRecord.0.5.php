@@ -1350,7 +1350,7 @@ class MyActiveRecord
 	 */
 	function validate_existence($strKey, $strMessage=null)
 	{
-		if( !empty($this->$strKey) )
+		if( !empty(trim($this->$strKey)) )
 		{
 			return true;
 		}
