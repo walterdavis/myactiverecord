@@ -912,7 +912,7 @@ class MyActiveRecord
 		{
 			foreach($arrVals as $key=>$val)
 			{
-				$this->$key=$val;
+				if(property_exists($this,$key))$this->$key=$val;
 			}
 			return true;
 		}
