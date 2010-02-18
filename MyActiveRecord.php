@@ -29,7 +29,7 @@
  *		notice, this list of conditions and the following disclaimer in the 
  *		documentation and/or other materials provided with the distribution.
  *
- *	-	Neither the name of Made Media Ltd. nor the names of its contributors 
+ *	-	Neither the name of MyActiveRecord nor the names of its contributors 
  *		may be used to endorse or promote products derived from this 
  *		software without specific prior written permission.
  *
@@ -97,7 +97,8 @@
  *
  * @category	Database
  * @package		MyActiveRecord
- * @author		Jake Grimley <jake.grimley@mademedia.co.uk> Walter Lee Davis <waltd@wdstudio.com>
+ * @author		Jake Grimley <jake.grimley@mademedia.co.uk> 
+ * @author		Walter Lee Davis <waltd@wdstudio.com>
  * @copyright	2006 - 2008 Jake Grimley, 2009 Walter Lee Davis
  * @version		0.5
  */
@@ -151,7 +152,7 @@ class MyActiveRecord
 		return $rscMySQL;
 	}
 	
-	/*
+	/**
 	 * A static method for preparing SQL queries. Safely escapes query paramaters
 	 * using standard printf syntax, e.g.:
 	 * <code>
@@ -940,6 +941,7 @@ class MyActiveRecord
 	 * function destroy(){
 	 * 	if(!$this->get_errors()) return parent::destroy();
 	 * }
+ 	 * </code>
 	 *
 	 * @return	boolean	True on success, False on failure
 	 */
@@ -959,7 +961,7 @@ class MyActiveRecord
 		return $this->destroy();
 	}
 	
-	/*
+	/**
 	 * Adds a child object of class strClass to this object
 	 * eg:
 	 * <code>
@@ -1417,7 +1419,7 @@ class MyActiveRecord
 	 * Checks to see if an e-mail exists, looks like an e-mail, and is unique
 	 *
 	 * @param string $strKey 
-	 * @return string
+	 * @return boolean true if the parameter is shaped like an e-mail address and does not already exist in the database
 	 * @author Walter Lee Davis
 	 */
 	
@@ -1431,7 +1433,7 @@ class MyActiveRecord
 	 * Checks to see if an e-mail exists and looks like an e-mail
 	 *
 	 * @param string $strKey 
-	 * @return string
+	 * @return boolean true if the parameter is shaped like an e-mail address
 	 * @author Walter Lee Davis
 	 */
 	
@@ -1452,7 +1454,12 @@ class MyActiveRecord
 		return htmlentities($this->$key,ENT_COMPAT,MYACTIVERECORD_CHARSET);
 	}
 
-	
+	/**
+	 * Return the classname and ID of the current object
+	 *
+	 * @return string
+	 * @author Walter Lee Davis
+	 */
 	function to_str()
 	{
 		return get_class($this).' '.$this->id;
