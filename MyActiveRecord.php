@@ -803,10 +803,11 @@ class MyActiveRecord
 	*/	
 	function Update( $strClass, $id, $properties )
 	{
-		$id = intval($id);
-		$object = MyActiveRecord::FindById($strClass, $id);
-		$object->populate($properties);
-		return $object->save();
+		if($object = MyActiveRecord::FindById($strClass, $id)){
+			$object->populate($properties);
+			return $object->save();
+		}
+		return false;
 	}
 	
 	/**
