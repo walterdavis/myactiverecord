@@ -114,6 +114,7 @@ if(!defined('MYACTIVERECORD_CHARSET')) define('MYACTIVERECORD_CHARSET','UTF-8');
 
 class MyActiveRecord
 {
+	var $_primary_key = 'id';
 	/**
 	 * Constructor function, defines primary key for each model, default is 'id'
 	 *
@@ -123,8 +124,6 @@ class MyActiveRecord
 	function MyActiveRecord(){
 		if(defined('MYACTIVERECORD_PRIMARY_KEY')) {
 			$this->_primary_key = MYACTIVERECORD_PRIMARY_KEY;
-		}else{
-			$this->_primary_key = 'id'
 		}
 	}
 
@@ -621,9 +620,11 @@ class MyActiveRecord
 	 * @param	string	strSQL	The SQL query
 	 * @return	array	array of objects of class strClass
 	 */
-	function FindBySql( $strClass, $strSQL, $strIndexBy=$this->_primary_key )
+	function FindBySql( $strClass, $strSQL, $strIndexBy='' )
 	{
-	
+		$f = MyActiveRecord::Create($strClass);
+		$k = $f->_primary_key;
+		if(empty($strIndexBy)) $strIndexBy = $k;
 		static $cache = array();
 		$md5 = md5($strSQL);
 	
@@ -672,7 +673,8 @@ class MyActiveRecord
 	 */
 	function FindAll( $strClass, $mxdWhere=NULL, $strOrderBy='', $intLimit=DEFAULT_LIMIT, $intOffset=0, $strGroupBy='' )
 	{
-		$k = $this->_primary_key;
+		$f = MyActiveRecord::Create($strClass);
+		$k = $f->_primary_key;
 		if(empty($strOrderBy)) $strOrderBy = $k . ' ASC';
 		$table = MyActiveRecord::Class2Table($strClass);
 		$strSQL = "SELECT * FROM $table";
