@@ -59,6 +59,12 @@
  *	3.	Every database table mapped by MyActiveRecord MUST have an 
  *		autoincrementing primary-key named `id`.
  *
+ * Changelog 0.5 - 0.6
+ * 
+ * 1. $this->_primary_key alias used everywhere for id, use MYACTIVERECORD_PRIMARY_KEY 
+ *    to set globally (default is still 'id').
+ *
+ *
  * Changelog 0.4 - 0.5
  *
  * 1. BUG FIXES
@@ -91,7 +97,7 @@
  * two foreign keys pointing to the same table, and so you need to use a 
  * different name to parent_table_id
  *
- * 3. ADDED FREQDIST() WHERE and LIMIT paramaters
+ * 3. ADDED FREQDIST() WHERE and LIMIT parameters
  * e.g. print_r( MyActiveRecord::FreqDist( 'Order', 'total_lines', "date BETWEEN '2005-01-01' AND '2006-01-01'" ) )
  *
  *
@@ -100,7 +106,7 @@
  * @author		Jake Grimley <jake.grimley@mademedia.co.uk> 
  * @author		Walter Lee Davis <waltd@wdstudio.com>
  * @copyright	2006 - 2008 Jake Grimley, 2009 Walter Lee Davis
- * @version		0.5
+ * @version		0.6
  */
 
 if(!defined('DEFAULT_LIMIT')) define('DEFAULT_LIMIT',10000);
@@ -108,6 +114,19 @@ if(!defined('MYACTIVERECORD_CHARSET')) define('MYACTIVERECORD_CHARSET','UTF-8');
 
 class MyActiveRecord
 {
+	/**
+	 * Constructor function, defines primary key for each model, default is 'id'
+	 *
+	 * @return Object
+	 * @author Walter Lee Davis
+	 */
+	function MyActiveRecord(){
+		if(defined('MYACTIVERECORD_PRIMARY_KEY')) {
+			$this->_primary_key = MYACTIVERECORD_PRIMARY_KEY;
+		}else{
+			$this->_primary_key = 'id'
+		}
+	}
 
 	/**
 	 * Returns a database connection to be used by the class.
@@ -494,10 +513,12 @@ class MyActiveRecord
 	 */
 	function Link(&$obj1, &$obj2)
 	{
+		$k = $obj1->_primary_key;
+		$k2 = $obj2->_primary_key;
 		$table1=MyActiveRecord::Class2Table($obj1);
 		$table2=MyActiveRecord::Class2Table($obj2);
 		$linktable = MyActiveRecord::GetLinkTable($table1, $table2);
-		$sql = "REPLACE INTO {$linktable} ({$table1}_id, {$table2}_id) VALUES ({$obj1->id}, {$obj2->id})";
+		$sql = "REPLACE INTO {$linktable} ({$table1}_id, {$table2}_id) VALUES (" . $obj1->$k . ", " . $obj2->$k2 . ")";
 		if( MyActiveRecord::Query($sql) )
 		{
 			return true;
@@ -519,10 +540,12 @@ class MyActiveRecord
 	 */
 	function UnLink(&$obj1, &$obj2)
 	{
+		$k = $obj1->_primary_key;
+		$k2 = $obj2->_primary_key;
 		$table1=MyActiveRecord::Class2Table($obj1);
 		$table2=MyActiveRecord::Class2Table($obj2);
 		$linktable = MyActiveRecord::GetLinkTable($table1, $table2);
-		$sql = "DELETE FROM {$linktable} WHERE {$table1}_id = {$obj1->id} AND {$table2}_id = {$obj2->id}";
+		$sql = "DELETE FROM {$linktable} WHERE {$table1}_id = " . $obj1->$k . " AND {$table2}_id = " . $obj2->$k2;
 		if( MyActiveRecord::Query($sql) )
 		{
 			return true;
@@ -571,8 +594,9 @@ class MyActiveRecord
 	 */
 	function Count( $strClass, $strWhere='1=1' )
 	{
+		$k = $this->_primary_key;
 		$table = MyActiveRecord::Class2Table($strClass);
-		$strSQL = "SELECT Count(id) AS count FROM $table WHERE $strWhere";
+		$strSQL = "SELECT Count($k) AS count FROM $table WHERE $strWhere";
 		$rscResult = MyActiveRecord::Query($strSQL);
 		if( $arr = mysql_fetch_array($rscResult) )
 		{
@@ -597,7 +621,7 @@ class MyActiveRecord
 	 * @param	string	strSQL	The SQL query
 	 * @return	array	array of objects of class strClass
 	 */
-	function FindBySql( $strClass, $strSQL, $strIndexBy='id' )
+	function FindBySql( $strClass, $strSQL, $strIndexBy=$this->_primary_key )
 	{
 	
 		static $cache = array();
@@ -646,8 +670,10 @@ class MyActiveRecord
 	 * @param	string	strGroupBy	optional GROUP BY fragment
 	 * @return	array	Array of objects. Array is empty if no objects found
 	 */
-	function FindAll( $strClass, $mxdWhere=NULL, $strOrderBy='id ASC', $intLimit=DEFAULT_LIMIT, $intOffset=0, $strGroupBy='' )
+	function FindAll( $strClass, $mxdWhere=NULL, $strOrderBy='', $intLimit=DEFAULT_LIMIT, $intOffset=0, $strGroupBy='' )
 	{
+		$k = $this->_primary_key;
+		if(empty($strOrderBy)) $strOrderBy = $k . ' ASC';
 		$table = MyActiveRecord::Class2Table($strClass);
 		$strSQL = "SELECT * FROM $table";
 		if($mxdWhere)
@@ -694,8 +720,10 @@ class MyActiveRecord
 	 * @param	strOrderBy	optional SQL ORDER BY argument, eg: "username ASC"
 	 * @return	object, false if no objects found
 	 */	
-	function FindFirst( $strClass, $strWhere=NULL, $strOrderBy='id ASC' )
+	function FindFirst( $strClass, $strWhere=NULL, $strOrderBy='' )
 	{
+		$k = $this->_primary_key;
+		if(empty($strOrderBy)) $strOrderBy = $k . ' ASC';
 		$arrObjects = MyActiveRecord::FindAll( $strClass, $strWhere, $strOrderBy, 1 );
 		if( Count($arrObjects) )
 		{
@@ -724,16 +752,18 @@ class MyActiveRecord
 	 */	
 	function FindById( $strClass, $mxdID )
 	{
+		$f = MyActiveRecord::Create($strClass);
+		$k = $f->_primary_key;
 		if( is_array($mxdID) )
 		{
 			$idlist = implode(', ', $mxdID);
 			$idlist = (count($mxdID) > 0) ? $idlist : '0';
-			return MyActiveRecord::FindAll( $strClass, 'id IN ( ' . $idlist . ' )' );
+			return MyActiveRecord::FindAll( $strClass, '`' . $k . '` IN ( ' . $idlist . ' )' );
 		}
 		else
 		{
 			$id = intval($mxdID);
-			return MyActiveRecord::FindFirst( $strClass, array('id'=>$id) );
+			return MyActiveRecord::FindFirst( $strClass, array($k=>$id) );
 		}
 	}
 	
@@ -873,7 +903,7 @@ class MyActiveRecord
 			// sort out key and value pairs
 			foreach ( $fields as $key=>$field )
 			{
-				if($key!='id')
+				if($key!=$this->_primary_key)
 				{
 					$val = MyActiveRecord::Escape( isset($this->$key) ? $this->$key : null  );
 					$vals[]=$val;
@@ -882,18 +912,19 @@ class MyActiveRecord
 				}
 			}
 			// insert or update as required
-			if( isset($this->id) && $this->id > 0 )
+			$k = $this->_primary_key;
+			if( isset($this->$k) && $this->$k > 0 )
 			{
-				$sql="UPDATE `$table` SET ".implode($set, ", ")." WHERE id={$this->id}";
+				$sql="UPDATE `$table` SET ".implode($set, ", "). ' WHERE `' . $k . '` = ' . $this->$k;
 			}
 			else
 			{
 				$sql="INSERT INTO `$table` (".implode($keys, ", ").") VALUES (".implode($vals, ", ").")";
 			}
 			$success = MyActiveRecord::Query($sql);
-			if( !isset($this->id) || $this->id == 0 )
+			if( !isset($this->$k) || $this->$k == 0 )
 			{
-				$this->id=mysql_insert_id( MyActiveRecord::Connection() );
+				$this->$k=mysql_insert_id( MyActiveRecord::Connection() );
 			}
 			return $success;
 		}
@@ -948,9 +979,10 @@ class MyActiveRecord
 	 */
 	function destroy()
 	{
+		$k = $this->_primary_key;
 		$table = MyActiveRecord::Class2Table($this);
-		$id = intval($this->id);
-		return MyActiveRecord::Query( "DELETE FROM $table WHERE id = $id" );
+		$id = intval($this->$k);
+		return MyActiveRecord::Query( "DELETE FROM `$table` WHERE `$k` = $id" );
 	}
 	
 	/**
@@ -976,9 +1008,11 @@ class MyActiveRecord
 	 */
 	function add_child($strClass, $properties=null)
 	{
+		$k = $this->_primary_key;
+		
 		$object = MyActiveRecord::Create($strClass, $properties);
 		$key = MyActiveRecord::Class2Table($this)."_id";
-		$object->$key = $this->id;
+		$object->$key = $this->$k;
 		return $object;
 	}
 	
@@ -998,7 +1032,9 @@ class MyActiveRecord
 	 */
 	function attach(&$obj)
 	{
-		if( isset($this->id) && $this->id > 0 && isset($obj->id) && $obj->id > 0 )
+		$k = $this->_primary_key;
+		$k2 = $obj->_primary_key;
+		if( isset($this->$k) && $this->$k > 0 && isset($obj->$k2) && $obj->$k2 > 0 )
 		{
 			return MyActiveRecord::Link($this, $obj);
 		}
@@ -1137,21 +1173,23 @@ class MyActiveRecord
 	 * @param	strForeignKey	if the foreign key is not parent_id but something different you can specify here
 	 * @return	array	array containing objects of class strClass
 	 */
-	function find_children($strClass, $mxdCondition=NULL, $strOrderBy='id ASC', $intLimit=DEFAULT_LIMIT, $intOffset=0, $strForeignKey=NULL)
+	function find_children($strClass, $mxdCondition=NULL, $strOrderBy='', $intLimit=DEFAULT_LIMIT, $intOffset=0, $strForeignKey=NULL)
 	{
+		$k = $this->_primary_key;
+		if(empty($strOrderBy)) $strOrderBy = $k . ' ASC';
 		// name of foreign key:
 		$key = $strForeignKey ? $strForeignKey : strtolower( get_class($this).'_id' );
-		$this->id = intval($this->id);
+		$this->$k = intval($this->$k);
 		if( is_array($mxdCondition) || is_null($mxdCondition) )
 		{
 			// specifiy condition as an array
-			$mxdCondition[$key] = $this->id;
+			$mxdCondition[$key] = $this->$k;
 			return MyActiveRecord::FindAll( $strClass, $mxdCondition, $strOrderBy, $intLimit, $intOffset );
 		}
 		else
 		{
 			// condition is non-null string
-			$fullSQLCondition = "$key=$this->id AND ($mxdCondition)";
+			$fullSQLCondition = "`$key` = " . $this->$k . " AND ($mxdCondition)";
 			return MyActiveRecord::FindAll( $strClass, $fullSQLCondition, $strOrderBy, $intLimit, $intOffset );
 		}
 	}
@@ -1173,14 +1211,15 @@ class MyActiveRecord
 	 */	
 	function find_linked($strClass, $mxdCondition=null, $strOrder=null)
 	{
-		if(isset($this->id) && $this->id > 0)
+		$k = $this->_primary_key;
+		if(isset($this->$k) && $this->$k > 0)
 		{
 			// only attempt to find links if this object has an id
 			$table = MyActiveRecord::Class2Table($strClass);
 			$thistable = MyActiveRecord::Class2Table($this);
 			$linktable=MyActiveRecord::GetLinkTable($table, $thistable);
-			$strOrder = $strOrder ? $strOrder: "{$strClass}.id";
-			$sql= "SELECT {$table}.* FROM {$table} INNER JOIN {$linktable} ON {$table}_id = {$table}.id WHERE $linktable.{$thistable}_id = {$this->id} ";
+			$strOrder = $strOrder ? $strOrder: "{$strClass}.{$k}";
+			$sql= "SELECT {$table}.* FROM {$table} INNER JOIN {$linktable} ON {$table}_id = {$table}.$k WHERE $linktable.{$thistable}_id = " . $this->$k . " ";
 				if( is_array($mxdCondition) )
 				{
 					foreach($mxdCondition as $key=>$val)
@@ -1233,10 +1272,11 @@ class MyActiveRecord
  */
 	function count_children($strClass, $strCondition = '1=1')
 	{
-		$this->id = intval($this->id);
+		$k = $this->_primary_key;
+		$this->$k = intval($this->$k);
 		// name of foreign key:
 		$key = strtolower( get_class($this).'_id' );
-		$fullSQLCondition = "$key=$this->id AND ($strCondition)";
+		$fullSQLCondition = "$key=" . $this->$k . " AND ($strCondition)";
 		return MyActiveRecord::Count( $strClass, $fullSQLCondition );
 	}
 	
@@ -1249,14 +1289,17 @@ class MyActiveRecord
  */
 	function count_linked($strClass, $mxdCondition=null)
 	{
-		if(isset($this->id) && $this->id > 0)
+		$k = $this->_primary_key;
+		if(isset($this->$k) && $this->$k > 0)
 		{
-			$this->id = intval($this->id);
+			$this->$k = intval($this->$k);
 			// only attempt to find links if this object has an id
 			$table = MyActiveRecord::Class2Table($strClass);
+			$f = MyActiveRecord::Create($strClass);
+			$k2 = $f->_primary_key;
 			$thistable = MyActiveRecord::Class2Table($this);
 			$linktable=MyActiveRecord::GetLinkTable($table, $thistable);
-			$sql= "SELECT COUNT(1) AS _count FROM {$table} INNER JOIN {$linktable} ON {$table}_id = {$table}.id WHERE $linktable.{$thistable}_id = {$this->id} ";
+			$sql= "SELECT COUNT(1) AS _count FROM {$table} INNER JOIN {$linktable} ON {$table}_id = {$table}.{$k2} WHERE $linktable.{$thistable}_id = " . $this->$k . " ";
 				if( is_array($mxdCondition) )
 				{
 					foreach($mxdCondition as $key=>$val)
@@ -1289,8 +1332,10 @@ class MyActiveRecord
  * @return Array of MAR objects
  * @author Walter Lee Davis
  */
-	function find_siblings($strKey, $strWhere='1', $strOrderBy='id ASC', $intLimit=DEFAULT_LIMIT, $intOffset=0, $strGroupBy=''){
-		return MyActiveRecord::FindAll(get_class($this),$strWhere . ' AND id != ' . intval($this->id) . ' AND ' . $strKey . ' != "" AND ' . $strKey . ' = "' . $this->$strKey . '"', $strOrderBy, $intLimit, $intOffset, $strGroupBy);
+	function find_siblings($strKey, $strWhere='1', $strOrderBy='', $intLimit=DEFAULT_LIMIT, $intOffset=0, $strGroupBy=''){
+		$k = $this->_primary_key;
+		if (empty($strOrderBy)) $strOrderBy = $k . ' ASC';
+		return MyActiveRecord::FindAll(get_class($this),$strWhere . ' AND ' . $k . ' != ' . intval($this->$k) . ' AND ' . $strKey . ' != "" AND ' . $strKey . ' = "' . $this->$strKey . '"', $strOrderBy, $intLimit, $intOffset, $strGroupBy);
 	}
 
 	/**
@@ -1404,11 +1449,12 @@ class MyActiveRecord
 	*/
 	function validate_uniqueness_of($strKey, $strMessage=null)
 	{
-		if ( empty($this->id) && MyActiveRecord::Count( get_class($this), "$strKey = '{$this->$strKey}'" ) > 0 )
+		$k = $this->_primary_key;
+		if ( empty($this->$k) && MyActiveRecord::Count( get_class($this), "$strKey = '" . $this->$strKey . "'" ) > 0 )
 		{
 			$this->add_error($strKey, $strMessage ? $strMessage : ucfirst($strKey).' is not unique');
 			return false;
-		}elseif(MyActiveRecord::Count( get_class($this), "$strKey = '{$this->$strKey}' AND id != " . ($this->id + 0) ) > 0){
+		}elseif(MyActiveRecord::Count( get_class($this), "$strKey = '" . $this->$strKey . "' AND `$k` != " . ($this->$k + 0) ) > 0){
 			$this->add_error($strKey, $strMessage ? $strMessage : ucfirst($strKey).' is not unique');
 			return false;
 		}else{
@@ -1463,7 +1509,8 @@ class MyActiveRecord
 	 */
 	function to_str()
 	{
-		return get_class($this).' '.$this->id;
+		$k = $this->_primary_key;
+		return get_class($this).' '.$this->$k;
 	}
 
 }
