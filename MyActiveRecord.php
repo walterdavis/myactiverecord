@@ -116,18 +116,6 @@ class MyActiveRecord
 {
 	var $_primary_key = 'id';
 	/**
-	 * Constructor function, defines primary key for each model, default is 'id'
-	 *
-	 * @return Object
-	 * @author Walter Lee Davis
-	 */
-	function MyActiveRecord(){
-		if(defined('MYACTIVERECORD_PRIMARY_KEY')) {
-			$this->_primary_key = MYACTIVERECORD_PRIMARY_KEY;
-		}
-	}
-
-	/**
 	 * Returns a database connection to be used by the class.
 	 * If you want, you can borrow this for access to a mysql database
 	 * resource:
