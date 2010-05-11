@@ -581,7 +581,8 @@ class MyActiveRecord
 	 */
 	function Count( $strClass, $strWhere='1=1' )
 	{
-		$k = $this->_primary_key;
+		$f = MyActiveRecord::Create($strClass);
+		$k = $f->_primary_key;
 		$table = MyActiveRecord::Class2Table($strClass);
 		$strSQL = "SELECT Count($k) AS count FROM $table WHERE $strWhere";
 		$rscResult = MyActiveRecord::Query($strSQL);
@@ -712,7 +713,8 @@ class MyActiveRecord
 	 */	
 	function FindFirst( $strClass, $strWhere=NULL, $strOrderBy='' )
 	{
-		$k = $this->_primary_key;
+		$f = MyActiveRecord::Create($strClass);
+		$k = $f->_primary_key;
 		if(empty($strOrderBy)) $strOrderBy = $k . ' ASC';
 		$arrObjects = MyActiveRecord::FindAll( $strClass, $strWhere, $strOrderBy, 1 );
 		if( Count($arrObjects) )
@@ -1202,6 +1204,8 @@ class MyActiveRecord
 	function find_linked($strClass, $mxdCondition=null, $strOrder=null)
 	{
 		$k = $this->_primary_key;
+		$f = MyActiveRecord::Create($strClass);
+		$k2 = $f->_primary_key;
 		if(isset($this->$k) && $this->$k > 0)
 		{
 			// only attempt to find links if this object has an id
@@ -1209,7 +1213,7 @@ class MyActiveRecord
 			$thistable = MyActiveRecord::Class2Table($this);
 			$linktable=MyActiveRecord::GetLinkTable($table, $thistable);
 			$strOrder = $strOrder ? $strOrder: "{$strClass}.{$k}";
-			$sql= "SELECT {$table}.* FROM {$table} INNER JOIN {$linktable} ON {$table}_id = {$table}.$k WHERE $linktable.{$thistable}_id = " . $this->$k . " ";
+			$sql= "SELECT {$table}.* FROM {$table} INNER JOIN {$linktable} ON {$table}_id = {$table}.$k2 WHERE $linktable.{$thistable}_id = " . $this->$k . " ";
 				if( is_array($mxdCondition) )
 				{
 					foreach($mxdCondition as $key=>$val)
