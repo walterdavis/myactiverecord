@@ -219,7 +219,7 @@ class MyActiveRecord
 	 */
 	function DbDate($intTimeStamp=null)
 	{
-		return date('Y-m-d', $intTimeStamp ? $intTimestamp:mktime() );
+		return date('Y-m-d', $intTimeStamp ? $intTimeStamp:mktime() );
 	}
 
 	/**
