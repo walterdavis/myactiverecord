@@ -1,3 +1,7 @@
+h1. This is really old, and won't run on modern PHP
+
+You should try this one: https://github.com/walterdavis/mini-active-record instead.
+
 MyActiveRecord was created by Jake Grimley at MadeMedia Ltd. I have forked the project, with Jake's blessing, because he no longer has time to devote to upgrades and maintenance.
 
 You may read more about MAR at its project page on "PHPClasses.org":http://www.phpclasses.org/browse/package/2990.html
